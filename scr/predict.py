@@ -1,27 +1,23 @@
 import joblib
+from config import MODEL_PATH
 
-pipeline = joblib.load("sentiment_model.pkl")
 
-def predict(text: str) -> dict:
-    label = pipeline.predict([text])[0]
-    proba = pipeline.predict_proba([text])[0]
-    classes = pipeline.classes_
-    confidence = round(max(proba) * 100, 1)
-
-    icons = {"positive": "Позитивный", "negative": "Негативный"}
-    return {
-        "label": label,
-        "display": icons[label],
-        "confidence": confidence,
+class FeedbackPredictor:
+    LABELS = {
+        "positive": "Позитивный",
+        "negative": "Негативный",
     }
 
-print("Введите отзыв (или 'выход' для завершения):\n")
-while True:
-    text = input("Отзыв: ").strip()
-    if text.lower() in ("выход", "exit", "quit"):
-        break
-    if not text:
-        continue
+    def __init__(self):
+        self.pipeline = joblib.load(MODEL_PATH)
+        print("Модель загружена.")
 
-    result = predict(text)
-    print(f"  → {result['display']} (уверенность: {result['confidence']}%)\n")
+    def predict(self, text: str) -> dict:
+        label = self.pipeline.predict([text])[0]
+        confidence = round(max(self.pipeline.predict_proba([text])[0]) * 100, 1)
+
+        return {
+            "label": label,
+            "display": self.LABELS[label],
+            "confidence": confidence,
+        }
